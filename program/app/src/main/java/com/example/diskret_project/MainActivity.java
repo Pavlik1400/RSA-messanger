@@ -43,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(goToSettings);
     }
 
+    /**
+     * Clears all messages in chosen room
+     * @param v- button View
+     */
     public void clearClick(View v){
         DataBase db = new DataBase(getApplicationContext());
         String roomNumber = db.getNameRoom()[1];

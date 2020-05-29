@@ -25,7 +25,6 @@ public class DataBase extends SQLiteOpenHelper {
     static final String TABLE_MESSAGES = "messages";
     static final String COLUMN_ROOM_NUM = "room_number";
     static final String COLUMN_MESSAGES = "messages_history";
-    static final String COLUMN_TIME = "sent_time";
 
     // String that creates table with settings
     private static final String SQL_CREATE_SETTINGS = "" +
@@ -39,8 +38,7 @@ public class DataBase extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_MESSAGES + " (" +
             _ID + " INTEGER PRIMARY KEY," +
             COLUMN_ROOM_NUM + " TEXT," +
-            COLUMN_MESSAGES + " TEXT," +
-            COLUMN_TIME + " TEXT" + ")";
+            COLUMN_MESSAGES + " TEXT" + ")";
 
     // String that deletes table with settings
     private static final String SQL_DELETE_SETTINGS =
@@ -283,9 +281,7 @@ public class DataBase extends SQLiteOpenHelper {
                     null, null, null);
 
             if (messagesCursor.moveToNext()) {
-                String messagesHistory = messagesCursor.getString(messagesCursor.getColumnIndex(
-                        DataBase.COLUMN_MESSAGES));
-                messagesHistory = "AdminяSuccessfully cleared history";
+                String messagesHistory = "AdminяSuccessfully cleared historyя-1";
                 newMessageValue.put(DataBase.COLUMN_MESSAGES, messagesHistory);
                 db.update(DataBase.TABLE_MESSAGES, newMessageValue,
                         DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber});
@@ -338,19 +334,19 @@ public class DataBase extends SQLiteOpenHelper {
         }
     }
 
-    public boolean hasMessage(String time){
+    public boolean hasMessage(String roomNumber, String time){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor messagesCursor = null;
 
         try {
-            messagesCursor = db.rawQuery("select * from " + DataBase.TABLE_MESSAGES, null);
-            while (messagesCursor.moveToNext()) {
-                if (messagesCursor.getString(messagesCursor.getColumnIndex(DataBase.COLUMN_TIME)) != null) {
-                    Log.d("TIME", messagesCursor.getString(messagesCursor.getColumnIndex(DataBase.COLUMN_TIME)));
-                    if (messagesCursor.getString(messagesCursor.getColumnIndex(DataBase.COLUMN_TIME)).equals(time))
-                        return true;
-                }
+            messagesCursor = db.query(DataBase.TABLE_MESSAGES, null,
+                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber},
+                    null, null, null);
+
+            if (messagesCursor.moveToNext()) {
+                String allMessages = messagesCursor.getString(messagesCursor.getColumnIndex(DataBase.COLUMN_MESSAGES));
+                return allMessages.contains(time);
             }
             return false;
         } finally {

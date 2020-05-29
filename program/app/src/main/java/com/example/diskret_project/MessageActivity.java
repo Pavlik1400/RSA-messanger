@@ -2,6 +2,8 @@ package com.example.diskret_project;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,11 +20,13 @@ import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,6 +47,7 @@ public class MessageActivity extends AppCompatActivity {
     ArrayList<String> messages;
     DataBase db;
     RSACipher rsaCipher;
+    PostMessage poster;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +59,8 @@ public class MessageActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.sendButton);
         encodeButton = findViewById(R.id.encodeButton);
         loadingProgressBar = findViewById(R.id.loadingProgressBar);
+
+        poster = new PostMessage();
 
         // Get list of all profiles from database
         db = new DataBase(getApplicationContext());
@@ -82,6 +89,9 @@ public class MessageActivity extends AppCompatActivity {
         // move to the end of recyclerView
         layoutManager.smoothScrollToPosition(mainRecyclerViewer, null, adapter.getItemCount());
 
+        String strMessages = TextUtils.join("‚‗‚", messages);
+        Log.d("ALLMESSAGES", strMessages);
+
 
         timer = new Timer();
         final URL getMessagesUrl = NetworkUtils.genGetRequest(roomNumber);
@@ -93,7 +103,7 @@ public class MessageActivity extends AppCompatActivity {
         };
         timer.schedule(getMessagesTimerTask, 500);
 
-        // onClick for senf button
+        // onClick for send button
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,14 +121,14 @@ public class MessageActivity extends AppCompatActivity {
 
                     // decode, add to db message, clear EditText, move to the end
                     // of recyclerView
-                    String data = "{\"author\": \"" + name + "\",\"message\": \"" + encodedMessage + "\"}";
-                    new PostMessage().execute(
-                            NetworkUtils.SERVER_HOST +
-                                    NetworkUtils.API_POST_MESSAGE +
-                                    roomNumber,
-                            data);
+                    //String data = "{\"author\":\"" + name + "\", \"message\":\"" + encodedMessage + "\"}";
+//                    new PostMessage().execute(
+//                            NetworkUtils.SERVER_HOST +
+//                                    NetworkUtils.API_POST_MESSAGE +
+//                                    roomNumber,
+//                            data);
 
-
+                    poster.sendPost(name, encodedMessage, roomNumber);
 //                    String decodedMessage = rsaCipher.decode(encodedMessage);
 //                    db.addMessage(roomNumber, name, decodedMessage, "0");
 //                    messages.add(name + "я" + decodedMessage + "я" + "0");
@@ -172,6 +182,8 @@ public class MessageActivity extends AppCompatActivity {
             String response = null;
             try {
                 response = NetworkUtils.getMessagesFromUrl(urls[0]);
+                assert response != null;
+                Log.d("RESPONSE", response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -190,12 +202,13 @@ public class MessageActivity extends AppCompatActivity {
 
                 int numberOfMessages = allMessagesArray.length();
                 for (int index = 0; index < numberOfMessages; ++index){
+
                     JSONObject messageObject = allMessagesArray.getJSONObject(index);
                     author = messageObject.getString("author");
                     encodedMessage = messageObject.getString("message");
                     time = messageObject.getString("time");
 
-                    if (!db.hasMessage(time)) {
+                    if (!db.hasMessage(roomNumber, time)) {
                         // decode, add message to db, move to the end of recyclerView
                         String decodedMessage = rsaCipher.decode(encodedMessage);
                         db.addMessage(roomNumber, author, decodedMessage, time);
@@ -214,7 +227,7 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
-    public class PostMessage extends AsyncTask<String, String, Void> {
+    public class PostMessages extends AsyncTask<String, String, Void> {
         @Override
         protected Void doInBackground(String... params) {
             String urlString = params[0]; // URL to call
@@ -225,15 +238,22 @@ public class MessageActivity extends AppCompatActivity {
                 URL url = new URL(urlString);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("POST");
-                out = new BufferedOutputStream(urlConnection.getOutputStream());
-
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-                writer.write(data);
-                writer.flush();
-                writer.close();
-                out.close();
-
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept","application/json");
+                urlConnection.setDoOutput(true);
+                urlConnection.setDoInput(true);
                 urlConnection.connect();
+
+                DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
+                os.writeBytes(URLEncoder.encode(data, "UTF-8"));
+
+                os.flush();
+                os.close();
+
+                Log.i("STATUS", String.valueOf(urlConnection.getResponseCode()));
+                Log.i("MSG" , urlConnection.getResponseMessage());
+
+                urlConnection.disconnect();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
