@@ -3,7 +3,6 @@ package com.example.diskret_project;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,15 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,7 +33,7 @@ public class MessageActivity extends AppCompatActivity {
     private ProgressBar loadingProgressBar;
 
     // another vars
-    String roomNumber;
+    String roomName;
     String name;
     public boolean pressedEncode;
     ArrayList<String> messages;
@@ -67,11 +58,11 @@ public class MessageActivity extends AppCompatActivity {
 
         // get name and room name from db
         String[] nameRoom = db.getNameRoom();
-        roomNumber = nameRoom[1];
+        roomName = nameRoom[1];
         name = nameRoom[0];
 
         // get messages in the given room
-        messages = db.getMessages(roomNumber);
+        messages = db.getMessages(roomName);
 
         // get parameters from db and assign rSACipher var
         Long[] parameters = db.getEncodingParameters();
@@ -98,13 +89,13 @@ public class MessageActivity extends AppCompatActivity {
             public void run() {
                 handler.post(new Runnable() {
                     public void run() {
-                        new GetMessageFromServer().execute(roomNumber);
+                        new GetMessageFromServer().execute(roomName);
                     }
                 });
             }
         };
 
-        timer.schedule(doAsynchronousTask, 0, 250);// execute in 4 times a second
+        timer.schedule(doAsynchronousTask, 0, 250);// execute 4 times a second
 
 
 
@@ -114,6 +105,7 @@ public class MessageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // get encoded message
                 String encodedMessage = messageEditText.getText().toString();
+                String encodedName = rsaCipher.encode(name);
 
                 // if user didn't encode it, than ignore
                 if (!pressedEncode){
@@ -124,7 +116,7 @@ public class MessageActivity extends AppCompatActivity {
                     pressedEncode = false;
                     loadingProgressBar.setVisibility(View.VISIBLE);
 
-                    new PostMessages().execute(name, encodedMessage, roomNumber);
+                    new PostMessages().execute(encodedName, encodedMessage, roomName);
 
                     messageEditText.setText("");
                     loadingProgressBar.setVisibility(View.INVISIBLE);
@@ -168,8 +160,15 @@ public class MessageActivity extends AppCompatActivity {
 
     }
 
+    // class that is run to get all messages, filter them,
+    // and save them to db
     class GetMessageFromServer extends AsyncTask<String, Void, String>{
 
+        /**
+         * Just gets response in another thread
+         * @param strings - string representation of url
+         * @return
+         */
         @Override
         protected String doInBackground(String... strings) {
             String response = null;
@@ -183,13 +182,18 @@ public class MessageActivity extends AppCompatActivity {
             return response;
         }
 
+        /**
+         * check if this message isn't in db yet and adds in db if not
+         * @param response
+         */
         @Override
         protected void onPostExecute(String response){
-            String author;
+            String encodedAuthor;
             String encodedMessage;
             String time;
 
             try {
+                // get JSONArray of messages from response
                 JSONObject responseObject = new JSONObject(response);
                 JSONArray allMessagesArray = responseObject.getJSONArray("response");
 
@@ -197,15 +201,17 @@ public class MessageActivity extends AppCompatActivity {
                 for (int index = 0; index < numberOfMessages; ++index){
 
                     JSONObject messageObject = allMessagesArray.getJSONObject(index);
-                    author = messageObject.getString("author");
+                    encodedAuthor = messageObject.getString("author");
                     encodedMessage = messageObject.getString("message");
                     time = messageObject.getString("time");
 
-                    if (!db.hasMessage(roomNumber, time)) {
+                    // filtering (don't duplicate message)
+                    if (!db.hasMessage(roomName, time)) {
                         // decode, add message to db, move to the end of recyclerView
                         String decodedMessage = rsaCipher.decode(encodedMessage);
-                        db.addMessage(roomNumber, author, decodedMessage, time);
-                        messages.add(author + "я" + decodedMessage + "я" + time);
+                        String decodedAuthor = rsaCipher.decode(encodedAuthor);
+                        db.addMessage(roomName, encodedAuthor, decodedMessage, time);
+                        messages.add(decodedAuthor + "я" + decodedMessage + "я" + time);
 
                         mainRecyclerViewer.getAdapter().notifyDataSetChanged();
                         mainRecyclerViewer.smoothScrollToPosition(messages.size()-1);
@@ -220,14 +226,15 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
+    // posts given encoded message on server in thread
     class PostMessages extends AsyncTask<String, String, Void> {
         @Override
         protected Void doInBackground(String... params) {
             String author = params[0]; // author
             String message = params[1]; // message
-            String roomNumber = params[2]; // room
+            String roomName = params[2]; // room
 
-            NetworkUtils.postMessageFromUrl(author, message, roomNumber);
+            NetworkUtils.postMessageFromUrl(author, message, roomName);
             return null;
         }
     }

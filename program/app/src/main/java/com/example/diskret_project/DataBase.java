@@ -16,7 +16,7 @@ import java.util.Arrays;
 
 public class DataBase extends SQLiteOpenHelper {
     static final String _ID = "id";
-    // Initialize table and column to save current name, room number and
+    // Initialize table and column to save current name, room name and
     // encoding parameters
     static final String TABLE_SETTINGS = "settings";
     static final String COLUMN_ROOM_AND_NAME = "room_and_name";
@@ -119,16 +119,16 @@ public class DataBase extends SQLiteOpenHelper {
     /**
      * saves room name and name of user to db
      * @param name - name of user
-     * @param roomNumber - name of room
+     * @param roomName - name of room
      */
-    void setRoomAndName(String name, String roomNumber){
+    void setRoomAndName(String name, String roomName){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
 
         // save value
         ContentValues settingsValue = new ContentValues();
         settingsValue.put(DataBase.COLUMN_ROOM_AND_NAME,
-                name + "," + roomNumber);
+                name + "," + roomName);
         Cursor settingsCursor = null;
 
         try {
@@ -206,11 +206,11 @@ public class DataBase extends SQLiteOpenHelper {
 
     /**
      * Saves message to db
-     * @param roomNumber - number/name of room
+     * @param roomName - name of room
      * @param author - name of author
      * @param message - message text
      */
-    void addMessage(String roomNumber, String author, String message, String time){
+    void addMessage(String roomName, String author, String message, String time){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues newMessageValue = new ContentValues();
@@ -220,7 +220,7 @@ public class DataBase extends SQLiteOpenHelper {
         try {
 
             messagesCursor = db.query(DataBase.TABLE_MESSAGES, null,
-                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber},
+                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName},
                     null, null, null);
 
             if (messagesCursor.moveToNext()) {
@@ -229,9 +229,9 @@ public class DataBase extends SQLiteOpenHelper {
                 messagesHistory += "‚‗‚" + author + "я" + message + "я" + time;
                 newMessageValue.put(DataBase.COLUMN_MESSAGES, messagesHistory);
                 db.update(DataBase.TABLE_MESSAGES, newMessageValue,
-                        DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber});
+                        DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName});
             } else {
-                newMessageValue.put(DataBase.COLUMN_ROOM_NUM, roomNumber);
+                newMessageValue.put(DataBase.COLUMN_ROOM_NUM, roomName);
                 newMessageValue.put(DataBase.COLUMN_MESSAGES, author + "я" + message + "я" + time);
                 db.insert(DataBase.TABLE_MESSAGES, null, newMessageValue);
             }
@@ -243,17 +243,17 @@ public class DataBase extends SQLiteOpenHelper {
     }
 
     /**
-     * @param roomNumber - name\number of room
+     * @param roomName - name of room
      * @return messages from given room in the ArrayList
      */
-    ArrayList<String> getMessages(String roomNumber){
+    ArrayList<String> getMessages(String roomName){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor messagesCursor = null;
 
         try {
             messagesCursor = db.query(DataBase.TABLE_MESSAGES, null,
-                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber},
+                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName},
                     null, null, null);
             messagesCursor.moveToNext();
 
@@ -268,9 +268,9 @@ public class DataBase extends SQLiteOpenHelper {
 
     /**
      * Clears all messages in given room
-     * @param roomNumber - number/name of room
+     * @param roomName - name of room
      */
-    public void clearMessages(String roomNumber){
+    public void clearMessages(String roomName){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues newMessageValue = new ContentValues();
@@ -278,14 +278,14 @@ public class DataBase extends SQLiteOpenHelper {
 
         try {
             messagesCursor = db.query(DataBase.TABLE_MESSAGES, null,
-                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber},
+                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName},
                     null, null, null);
 
             if (messagesCursor.moveToNext()) {
                 String messagesHistory = "AdminяSuccessfully cleared historyя-1";
                 newMessageValue.put(DataBase.COLUMN_MESSAGES, messagesHistory);
                 db.update(DataBase.TABLE_MESSAGES, newMessageValue,
-                        DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber});
+                        DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName});
             }
         } finally {
             if (messagesCursor != null && !messagesCursor.isClosed())
@@ -314,17 +314,17 @@ public class DataBase extends SQLiteOpenHelper {
     }
 
     /**
-     * @param roomNumber - number of room
-     * @return true if there is room with given number else false
+     * @param roomName - name of room
+     * @return true if there is room with given name else false
      */
-    public boolean hasRoom(String roomNumber){
+    public boolean hasRoom(String roomName){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor messagesCursor = null;
 
         try {
             messagesCursor = db.query(DataBase.TABLE_MESSAGES, null,
-                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber},
+                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName},
                     null, null, null);
 
             return messagesCursor.moveToNext();
@@ -335,14 +335,19 @@ public class DataBase extends SQLiteOpenHelper {
         }
     }
 
-    public boolean hasMessage(String roomNumber, String time){
+    /**
+     * @param roomName - name of room
+     * @param time - time when message was sent
+     * @return true if there is a message with given time in given room else false
+     */
+    public boolean hasMessage(String roomName, String time){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor messagesCursor = null;
 
         try {
             messagesCursor = db.query(DataBase.TABLE_MESSAGES, null,
-                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomNumber},
+                    DataBase.COLUMN_ROOM_NUM + " = ?", new String[]{roomName},
                     null, null, null);
 
             if (messagesCursor.moveToNext()) {
@@ -357,36 +362,15 @@ public class DataBase extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Clears all data that is in the db. (Settings and messages)
+     */
     public void clearDB(){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues newMessageValue = new ContentValues();
-        Cursor messagesCursor = null;
-        Cursor settingsCursor = null;
-
-
-        try {
-            messagesCursor = db.rawQuery("select * from " + DataBase.TABLE_MESSAGES, null);
-
-            while (messagesCursor.moveToNext()) {
-                String roomNumber = messagesCursor.getString(messagesCursor.getColumnIndex(COLUMN_ROOM_NUM));
-                db.delete(DataBase.TABLE_MESSAGES, DataBase.COLUMN_ROOM_NUM + " = ?",
-                        new String[] {roomNumber});
-            }
-
-            settingsCursor = db.rawQuery("select * from " + DataBase.TABLE_SETTINGS, null);
-            if (settingsCursor.moveToNext()) {
-                String nameRoom = settingsCursor.getString(settingsCursor.getColumnIndex(COLUMN_ROOM_AND_NAME));
-                db.delete(DataBase.TABLE_SETTINGS, DataBase.COLUMN_ROOM_AND_NAME + " = ?",
-                        new String[] {nameRoom});
-            }
-
-        } finally {
-            if (messagesCursor != null && !messagesCursor.isClosed())
-                messagesCursor.close();
-            if (settingsCursor != null && !settingsCursor.isClosed())
-                settingsCursor.close();
-            db.close();
-        }
+        db.execSQL(DataBase.SQL_DELETE_MESSAGES);
+        db.execSQL(DataBase.SQL_DELETE_SETTINGS);
+        db.execSQL(DataBase.SQL_CREATE_SETTINGS);
+        db.execSQL(DataBase.SQL_CREATE_MESSAGES);
     }
 }

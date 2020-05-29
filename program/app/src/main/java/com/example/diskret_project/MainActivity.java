@@ -57,19 +57,32 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Methods that clear whole db
+     * @param v
+     */
     public void clearALLClick(View v){
         DataBase db = new DataBase(getApplicationContext());
         db.clearDB();
         Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Method that deletes messages from server
+     * @param v
+     * @throws IOException
+     */
     public void deleteServerMessages(View v) throws IOException {
         DataBase db = new DataBase(getApplicationContext());
         String roomNumber = db.getNameRoom()[1];
 
         new RoomDeleter().execute(roomNumber);
+        Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Class that is used to make delete request in thread
+     */
     class RoomDeleter extends AsyncTask<String, Void, Void>{
 
         @Override

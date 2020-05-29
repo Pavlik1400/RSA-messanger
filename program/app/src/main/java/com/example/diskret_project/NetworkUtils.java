@@ -1,35 +1,42 @@
 package com.example.diskret_project;
 
-import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
 /*
 get: host/api/v1/get_rooms/<room_num>
 post: host/api/v1/post_rooms/<room_num>
+delete: host/api/v1/del_rooms/<room_num>
 'human':
 'message':
  */
 
+/**
+ * Class for doing some stuff connected with http requests
+ */
 public class NetworkUtils {
     public static final String SERVER_HOST = "http://yexp.pythonanywhere.com/";
     public static final String API_GET_MESSAGES = "api/v1/get_rooms/";
     public static final String API_POST_MESSAGE = "api/v1/post_rooms/";
     public static final String API_DEL_MESSAGE = "api/v1/del_rooms/";
 
-    public static String getMessages(String roomNumber) throws IOException {
-        URL getRequestUrl = new URL(SERVER_HOST + API_GET_MESSAGES + roomNumber);
+    /**
+     * Methods that gets 20 last messages from server in given room
+     * @param roomName
+     * @return
+     * @throws IOException
+     */
+    public static String getMessages(String roomName) throws IOException {
+        URL getRequestUrl = new URL(SERVER_HOST + API_GET_MESSAGES + roomName);
 
         HttpURLConnection urlConnection = (HttpURLConnection) getRequestUrl.openConnection();
         urlConnection.setRequestMethod("GET");
@@ -56,9 +63,15 @@ public class NetworkUtils {
         }
     }
 
-    public static void postMessageFromUrl(String author, String encodedMessage, String roomNumber){
+    /**
+     * posts given message and author on the server
+     * @param encodedAuthor - name of author
+     * @param encodedMessage - encoded message
+     * @param roomName - name of room to post message
+     */
+    public static void postMessageFromUrl(String encodedAuthor, String encodedMessage, String roomName){
         try {
-            URL url = new URL(NetworkUtils.SERVER_HOST + NetworkUtils.API_POST_MESSAGE + roomNumber);
+            URL url = new URL(NetworkUtils.SERVER_HOST + NetworkUtils.API_POST_MESSAGE + roomName);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
@@ -67,7 +80,7 @@ public class NetworkUtils {
             conn.setDoInput(true);
 
             JSONObject jsonParam = new JSONObject();
-            jsonParam.put("author", author);
+            jsonParam.put("author", encodedAuthor);
             jsonParam.put("message", encodedMessage);
 
             Log.i("JSON", jsonParam.toString());
@@ -87,13 +100,18 @@ public class NetworkUtils {
         }
     }
 
-    public static void delMessagesServer(String roomNumber) throws IOException {
-        URL getRequestUrl = new URL(SERVER_HOST + API_DEL_MESSAGE + roomNumber);
+    /**
+     * deletes given room on the server
+     * @param roomName - name of room
+     * @throws IOException
+     */
+    public static void delMessagesServer(String roomName) throws IOException {
+        URL getRequestUrl = new URL(SERVER_HOST + API_DEL_MESSAGE + roomName);
 
         HttpURLConnection urlConnection = (HttpURLConnection) getRequestUrl.openConnection();
         urlConnection.setRequestMethod("GET");
 
-        Log.d("URL", SERVER_HOST + API_DEL_MESSAGE + roomNumber);
+        Log.d("URL", SERVER_HOST + API_DEL_MESSAGE + roomName);
 
         try{
             urlConnection.getResponseCode();

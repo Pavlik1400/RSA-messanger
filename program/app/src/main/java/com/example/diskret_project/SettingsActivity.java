@@ -49,7 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
                 String q_number = qEditText.getText().toString();
                 String e_number = eEditText.getText().toString();
                 String name = nameEditText.getText().toString();
-                String roomNumber = roomEditText.getText().toString();
+                String roomName = roomEditText.getText().toString();
 
                 // if all numbers are empty than maybe user want to only update names
                 if (p_number.equals("") || q_number.equals("")  || e_number.equals("")){
@@ -59,15 +59,15 @@ public class SettingsActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Name can't be empty",
                                     Toast.LENGTH_SHORT).show();
                         }
-                        else if (roomNumber.equals("")){
+                        else if (roomName.equals("")){
                             Toast.makeText(getApplicationContext(), "Room number can't be empty",
                                     Toast.LENGTH_SHORT).show();
                         }
                         else {
-                            db.setRoomAndName(name, roomNumber);
+                            db.setRoomAndName(name, roomName);
 
-                            if (!db.hasRoom(roomNumber))
-                                db.addMessage(roomNumber, name, "Init message for room " + roomNumber, "-1");
+                            if (!db.hasRoom(roomName))
+                                db.addMessage(roomName, name, "Init message for room " + roomName, "-1");
 
                             Toast.makeText(getApplicationContext(), "updated name and room successfully",
                                     Toast.LENGTH_SHORT).show();
@@ -91,16 +91,16 @@ public class SettingsActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "Name can't be empty",
                                 Toast.LENGTH_SHORT).show();
                     }
-                    else if (roomNumber.equals("")){
+                    else if (roomName.equals("")){
                         Toast.makeText(getApplicationContext(), "Room number can't be empty",
                                 Toast.LENGTH_SHORT).show();
                     }
                     else {
                         db.setEncodingParams(p, q, e);
-                        db.setRoomAndName(name, roomNumber);
-                        if (!db.hasRoom(roomNumber))
-                            db.addMessage(roomNumber, name, "Init message for room " +
-                                    roomNumber, "-1");
+                        db.setRoomAndName(name, roomName);
+                        if (!db.hasRoom(roomName))
+                            db.addMessage(roomName, name, "Init message for room " +
+                                    roomName, "-1");
 
                         Toast.makeText(getApplicationContext(), "Saved successfully",
                                 Toast.LENGTH_SHORT).show();
