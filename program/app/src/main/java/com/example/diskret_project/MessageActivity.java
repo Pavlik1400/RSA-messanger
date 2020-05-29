@@ -2,6 +2,7 @@ package com.example.diskret_project;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -39,37 +40,30 @@ public class MessageActivity extends AppCompatActivity {
     private Button sendButton;
     private Button encodeButton;
     private ProgressBar loadingProgressBar;
-    private Timer timer;
 
+    // another vars
     String roomNumber;
     String name;
     public boolean pressedEncode;
     ArrayList<String> messages;
     DataBase db;
     RSACipher rsaCipher;
+    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_acticity);
 
+        // assign views
         mainRecyclerViewer = findViewById(R.id.mainRecyclerViewer);
         messageEditText = findViewById(R.id.messageEditText);
         sendButton = findViewById(R.id.sendButton);
         encodeButton = findViewById(R.id.encodeButton);
         loadingProgressBar = findViewById(R.id.loadingProgressBar);
 
-        // Get list of all profiles from database
+        // get access to db
         db = new DataBase(getApplicationContext());
-
-        // get parameters from db and create rSACipher var
-        Long[] parameters = db.getEncodingParameters();
-        rsaCipher = new RSACipher(parameters[0], parameters[1], parameters[2]);
-
-
-        // linear manager for recyclerView
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        mainRecyclerViewer.setLayoutManager(layoutManager);
 
         // get name and room name from db
         String[] nameRoom = db.getNameRoom();
@@ -79,26 +73,39 @@ public class MessageActivity extends AppCompatActivity {
         // get messages in the given room
         messages = db.getMessages(roomNumber);
 
+        // get parameters from db and assign rSACipher var
+        Long[] parameters = db.getEncodingParameters();
+        rsaCipher = new RSACipher(parameters[0], parameters[1], parameters[2]);
+
+        // linear manager for recyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        mainRecyclerViewer.setLayoutManager(layoutManager);
+
         // create and set adapter
         final MessageAdapter adapter = new MessageAdapter(messages);
         mainRecyclerViewer.setAdapter(adapter);
 
-
         // move to the end of recyclerView
         layoutManager.scrollToPositionWithOffset(adapter.getItemCount()-1, adapter.getItemCount());
 
-//        String strMessages = TextUtils.join("‚‗‚", messages);
-//        Log.d("ALLMESSAGES", strMessages);
-
-
+        TimerTask doAsynchronousTask;
+        final Handler handler = new Handler();
         timer = new Timer();
-        TimerTask getMessagesTimerTask = new TimerTask() {
+
+        doAsynchronousTask = new TimerTask() {
             @Override
             public void run() {
-                new GetMessageFromServer().execute(roomNumber);
+                handler.post(new Runnable() {
+                    public void run() {
+                        new GetMessageFromServer().execute(roomNumber);
+                    }
+                });
             }
         };
-        timer.schedule(getMessagesTimerTask, 400);
+
+        timer.schedule(doAsynchronousTask, 0, 250);// execute in every 10 s
+
+
 
         // onClick for send button
         sendButton.setOnClickListener(new View.OnClickListener() {
