@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    >
+
+    <EditText
+        android:id="@+id/pEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="number p, ex: 7907"
+        android:inputType="numberSigned"
+        />
+
+    <EditText
+        android:id="@+id/qEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="number q, ex: 7919"
+        android:inputType="numberSigned"
+        />
+
+    <EditText
+        android:id="@+id/eEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="number e, ex: 17"
+        android:inputType="numberSigned"
+        />
+
+    <EditText
+        android:id="@+id/roomEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="room name"
+        android:inputType="text"
+        />
+
+    <EditText
+        android:id="@+id/nameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="your name"
+        android:inputType="textPersonName"
+        />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:textSize="22sp"
+        />
+
+</LinearLayout>
