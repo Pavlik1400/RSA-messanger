@@ -31,9 +31,18 @@
         android:id="@+id/clearButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Clear Current room"
+        android:text="Clear room from Data base"
         android:textSize="22sp"
         android:onClick="clearClick"
+        />
+
+    <Button
+        android:id="@+id/clearAllButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear whole Data base"
+        android:textSize="22sp"
+        android:onClick="clearALLClick"
         />
 
 

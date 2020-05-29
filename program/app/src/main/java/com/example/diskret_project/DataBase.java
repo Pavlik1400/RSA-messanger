@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -352,6 +353,39 @@ public class DataBase extends SQLiteOpenHelper {
         } finally {
             if (messagesCursor != null && !messagesCursor.isClosed())
                 messagesCursor.close();
+            db.close();
+        }
+    }
+
+    public void clearDB(){
+        // access db
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues newMessageValue = new ContentValues();
+        Cursor messagesCursor = null;
+        Cursor settingsCursor = null;
+
+
+        try {
+            messagesCursor = db.rawQuery("select * from " + DataBase.TABLE_MESSAGES, null);
+
+            while (messagesCursor.moveToNext()) {
+                String roomNumber = messagesCursor.getString(messagesCursor.getColumnIndex(COLUMN_ROOM_NUM));
+                db.delete(DataBase.TABLE_MESSAGES, DataBase.COLUMN_ROOM_NUM + " = ?",
+                        new String[] {roomNumber});
+            }
+
+            settingsCursor = db.rawQuery("select * from " + DataBase.TABLE_SETTINGS, null);
+            if (settingsCursor.moveToNext()) {
+                String nameRoom = messagesCursor.getString(messagesCursor.getColumnIndex(COLUMN_ROOM_NUM));
+                db.delete(DataBase.TABLE_MESSAGES, DataBase.COLUMN_ROOM_NUM + " = ?",
+                        new String[] {nameRoom});
+            }
+
+        } finally {
+            if (messagesCursor != null && !messagesCursor.isClosed())
+                messagesCursor.close();
+            if (settingsCursor != null && !settingsCursor.isClosed())
+                settingsCursor.close();
             db.close();
         }
     }

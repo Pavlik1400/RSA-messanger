@@ -85,19 +85,17 @@ public class MessageActivity extends AppCompatActivity {
 
 
         // move to the end of recyclerView
-        //layoutManager.smoothScrollToPosition(mainRecyclerViewer, null, adapter.getItemCount());
         layoutManager.scrollToPositionWithOffset(adapter.getItemCount()-1, adapter.getItemCount());
 
-        String strMessages = TextUtils.join("‚‗‚", messages);
-        Log.d("ALLMESSAGES", strMessages);
+//        String strMessages = TextUtils.join("‚‗‚", messages);
+//        Log.d("ALLMESSAGES", strMessages);
 
 
         timer = new Timer();
-        final URL getMessagesUrl = NetworkUtils.genGetRequest(roomNumber);
         TimerTask getMessagesTimerTask = new TimerTask() {
             @Override
             public void run() {
-                new GetMessageFromServer().execute(getMessagesUrl);
+                new GetMessageFromServer().execute(roomNumber);
             }
         };
         timer.schedule(getMessagesTimerTask, 400);
@@ -130,6 +128,8 @@ public class MessageActivity extends AppCompatActivity {
         encodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (pressedEncode)
+                    return;
                 String message = messageEditText.getText().toString();
                 String encodedMessage;
                 try {
@@ -160,13 +160,13 @@ public class MessageActivity extends AppCompatActivity {
 
     }
 
-    class GetMessageFromServer extends AsyncTask<URL, Void, String>{
+    class GetMessageFromServer extends AsyncTask<String, Void, String>{
 
         @Override
-        protected String doInBackground(URL... urls) {
+        protected String doInBackground(String... strings) {
             String response = null;
             try {
-                response = NetworkUtils.getMessagesFromUrl(urls[0]);
+                response = NetworkUtils.getMessages(strings[0]);
                 if (response != null)
                     Log.d("RESPONSE", response);
             } catch (IOException e) {
@@ -212,7 +212,7 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
-    public class PostMessages extends AsyncTask<String, String, Void> {
+    class PostMessages extends AsyncTask<String, String, Void> {
         @Override
         protected Void doInBackground(String... params) {
             String author = params[0]; // author

@@ -53,4 +53,10 @@ public class MainActivity extends AppCompatActivity {
         db.clearMessages(roomNumber);
         Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
     }
+
+    public void clearALLClick(View v){
+        DataBase db = new DataBase(getApplicationContext());
+        db.clearDB();
+        Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
+    }
 }

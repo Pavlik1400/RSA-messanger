@@ -26,21 +26,8 @@ public class NetworkUtils {
     public static final String API_GET_MESSAGES = "api/v1/get_rooms/";
     public static final String API_POST_MESSAGE = "api/v1/post_rooms/";
 
-    public static URL genGetRequest(String roomNumber){
-        Uri getMessagesUri = Uri.parse(SERVER_HOST + API_GET_MESSAGES + roomNumber);
-
-        URL result = null;
-
-        try {
-            result = new URL(getMessagesUri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        return result;
-    }
-
-    public static String getMessagesFromUrl(URL getRequestUrl) throws IOException {
+    public static String getMessages(String roomNumber) throws IOException {
+        URL getRequestUrl = new URL(SERVER_HOST + API_GET_MESSAGES + roomNumber);
 
         HttpURLConnection urlConnection = (HttpURLConnection) getRequestUrl.openConnection();
         urlConnection.setRequestMethod("GET");
