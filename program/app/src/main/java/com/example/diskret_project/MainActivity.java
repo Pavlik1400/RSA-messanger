@@ -1,11 +1,14 @@
 package com.example.diskret_project;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,5 +61,26 @@ public class MainActivity extends AppCompatActivity {
         DataBase db = new DataBase(getApplicationContext());
         db.clearDB();
         Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
+    }
+
+    public void deleteServerMessages(View v) throws IOException {
+        DataBase db = new DataBase(getApplicationContext());
+        String roomNumber = db.getNameRoom()[1];
+
+        new RoomDeleter().execute(roomNumber);
+    }
+
+    class RoomDeleter extends AsyncTask<String, Void, Void>{
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            try {
+                NetworkUtils.delMessagesServer(strings[0]);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            return null;
+        }
     }
 }

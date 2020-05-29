@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Go to messages"
-        android:textSize="22sp"
+        android:textSize="18sp"
         android:onClick="messagesClicker"
         />
 
@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Settings"
-        android:textSize="22sp"
+        android:textSize="18sp"
         android:onClick="settingsClick"
         />
 
@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Clear room from Data base"
-        android:textSize="22sp"
+        android:textSize="18sp"
         android:onClick="clearClick"
         />
 
@@ -41,8 +41,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Clear whole Data base"
-        android:textSize="22sp"
+        android:textSize="18sp"
         android:onClick="clearALLClick"
+        />
+
+    <Button
+        android:id="@+id/deleteAllButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="delete all messages from server"
+        android:textSize="18sp"
+        android:onClick="deleteServerMessages"
         />
 
 

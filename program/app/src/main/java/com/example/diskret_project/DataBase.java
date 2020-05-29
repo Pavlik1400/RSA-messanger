@@ -376,8 +376,8 @@ public class DataBase extends SQLiteOpenHelper {
 
             settingsCursor = db.rawQuery("select * from " + DataBase.TABLE_SETTINGS, null);
             if (settingsCursor.moveToNext()) {
-                String nameRoom = messagesCursor.getString(messagesCursor.getColumnIndex(COLUMN_ROOM_NUM));
-                db.delete(DataBase.TABLE_MESSAGES, DataBase.COLUMN_ROOM_NUM + " = ?",
+                String nameRoom = settingsCursor.getString(settingsCursor.getColumnIndex(COLUMN_ROOM_AND_NAME));
+                db.delete(DataBase.TABLE_SETTINGS, DataBase.COLUMN_ROOM_AND_NAME + " = ?",
                         new String[] {nameRoom});
             }
 

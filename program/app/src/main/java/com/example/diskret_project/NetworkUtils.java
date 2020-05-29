@@ -5,6 +5,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class NetworkUtils {
     public static final String SERVER_HOST = "http://yexp.pythonanywhere.com/";
     public static final String API_GET_MESSAGES = "api/v1/get_rooms/";
     public static final String API_POST_MESSAGE = "api/v1/post_rooms/";
+    public static final String API_DEL_MESSAGE = "api/v1/del_rooms/";
 
     public static String getMessages(String roomNumber) throws IOException {
         URL getRequestUrl = new URL(SERVER_HOST + API_GET_MESSAGES + roomNumber);
@@ -82,6 +84,25 @@ public class NetworkUtils {
             conn.disconnect();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    public static void delMessagesServer(String roomNumber) throws IOException {
+        URL getRequestUrl = new URL(SERVER_HOST + API_DEL_MESSAGE + roomNumber);
+
+        HttpURLConnection urlConnection = (HttpURLConnection) getRequestUrl.openConnection();
+        urlConnection.setRequestMethod("GET");
+
+        Log.d("URL", SERVER_HOST + API_DEL_MESSAGE + roomNumber);
+
+        try{
+            urlConnection.getResponseCode();
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            urlConnection.disconnect();
         }
     }
 }

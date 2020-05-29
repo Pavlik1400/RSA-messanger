@@ -88,6 +88,7 @@ public class MessageActivity extends AppCompatActivity {
         // move to the end of recyclerView
         layoutManager.scrollToPositionWithOffset(adapter.getItemCount()-1, adapter.getItemCount());
 
+        // Create and schedule timer task for getting messages 4 times a sec
         TimerTask doAsynchronousTask;
         final Handler handler = new Handler();
         timer = new Timer();
@@ -103,7 +104,7 @@ public class MessageActivity extends AppCompatActivity {
             }
         };
 
-        timer.schedule(doAsynchronousTask, 0, 250);// execute in every 10 s
+        timer.schedule(doAsynchronousTask, 0, 250);// execute in 4 times a second
 
 
 
