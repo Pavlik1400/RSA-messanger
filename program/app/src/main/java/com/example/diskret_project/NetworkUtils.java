@@ -1,7 +1,11 @@
 package com.example.diskret_project;
 
 import android.net.Uri;
+import android.util.Log;
 
+import org.json.JSONObject;
+
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,10 +40,6 @@ public class NetworkUtils {
         return result;
     }
 
-//    public URL genPostRequest(String roomNumber, String author, String message){
-//        Uri postMessageUri = Uri.parse(SERVER_HOST + API_POST_MESSAGE + roomNumber).buildUpon().app
-//    }
-
     public static String getMessagesFromUrl(URL getRequestUrl) throws IOException {
 
         HttpURLConnection urlConnection = (HttpURLConnection) getRequestUrl.openConnection();
@@ -64,6 +64,37 @@ public class NetworkUtils {
         }
         finally{
             urlConnection.disconnect();
+        }
+    }
+
+    public static void postMessageFromUrl(String author, String encodedMessage, String roomNumber){
+        try {
+            URL url = new URL(NetworkUtils.SERVER_HOST + NetworkUtils.API_POST_MESSAGE + roomNumber);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+            conn.setRequestProperty("Accept","application/json");
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("author", author);
+            jsonParam.put("message", encodedMessage);
+
+            Log.i("JSON", jsonParam.toString());
+            DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+            //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+            os.writeBytes(jsonParam.toString());
+
+            os.flush();
+            os.close();
+
+            Log.i("STATUS", String.valueOf(conn.getResponseCode()));
+            Log.i("MSG" , conn.getResponseMessage());
+
+            conn.disconnect();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 }

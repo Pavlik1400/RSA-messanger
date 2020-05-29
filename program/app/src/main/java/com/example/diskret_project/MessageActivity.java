@@ -83,8 +83,10 @@ public class MessageActivity extends AppCompatActivity {
         final MessageAdapter adapter = new MessageAdapter(messages);
         mainRecyclerViewer.setAdapter(adapter);
 
+
         // move to the end of recyclerView
-        layoutManager.smoothScrollToPosition(mainRecyclerViewer, null, adapter.getItemCount());
+        //layoutManager.smoothScrollToPosition(mainRecyclerViewer, null, adapter.getItemCount());
+        layoutManager.scrollToPositionWithOffset(adapter.getItemCount()-1, adapter.getItemCount());
 
         String strMessages = TextUtils.join("‚‗‚", messages);
         Log.d("ALLMESSAGES", strMessages);
@@ -98,7 +100,7 @@ public class MessageActivity extends AppCompatActivity {
                 new GetMessageFromServer().execute(getMessagesUrl);
             }
         };
-        timer.schedule(getMessagesTimerTask, 500);
+        timer.schedule(getMessagesTimerTask, 400);
 
         // onClick for send button
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -165,8 +167,8 @@ public class MessageActivity extends AppCompatActivity {
             String response = null;
             try {
                 response = NetworkUtils.getMessagesFromUrl(urls[0]);
-                assert response != null;
-                Log.d("RESPONSE", response);
+                if (response != null)
+                    Log.d("RESPONSE", response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -214,38 +216,10 @@ public class MessageActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(String... params) {
             String author = params[0]; // author
-            String message = params[1]; //message
-            String roomNumber = params[2];
-            OutputStream out = null;
+            String message = params[1]; // message
+            String roomNumber = params[2]; // room
 
-            try {
-                URL url = new URL("http://yexp.pythonanywhere.com/api/v1/post_rooms/" + roomNumber);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
-                conn.setRequestProperty("Accept","application/json");
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-
-                JSONObject jsonParam = new JSONObject();
-                jsonParam.put("author", author);
-                jsonParam.put("message", message);
-
-                Log.i("JSON", jsonParam.toString());
-                DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-                //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
-                os.writeBytes(jsonParam.toString());
-
-                os.flush();
-                os.close();
-
-                Log.i("STATUS", String.valueOf(conn.getResponseCode()));
-                Log.i("MSG" , conn.getResponseMessage());
-
-                conn.disconnect();
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
+            NetworkUtils.postMessageFromUrl(author, message, roomNumber);
             return null;
         }
     }

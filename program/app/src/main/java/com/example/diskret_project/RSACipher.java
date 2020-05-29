@@ -17,7 +17,7 @@ public class RSACipher {
         char first_symbol;
         char second_symbol;
         if (message.length() % 2 == 1)
-            message += "0";
+            message += " ";
 
         StringBuilder result = new StringBuilder();
         int length = message.length();
