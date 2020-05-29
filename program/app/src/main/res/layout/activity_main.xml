@@ -26,6 +26,15 @@
         android:onClick="settingsClick"
         />
 
+    <Button
+        android:id="@+id/clearButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Current room"
+        android:textSize="22sp"
+        android:onClick="clearClick"
+        />
+
 
 
 </LinearLayout>

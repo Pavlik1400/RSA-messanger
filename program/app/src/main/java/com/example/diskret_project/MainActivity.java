@@ -42,4 +42,11 @@ public class MainActivity extends AppCompatActivity {
         Intent goToSettings = new Intent(getApplicationContext(), SettingsActivity.class);
         startActivity(goToSettings);
     }
+
+    public void clearClick(View v){
+        DataBase db = new DataBase(getApplicationContext());
+        String roomNumber = db.getNameRoom()[1];
+        db.clearMessages(roomNumber);
+        Toast.makeText(getApplicationContext(), "Done", Toast.LENGTH_SHORT).show();
+    }
 }
