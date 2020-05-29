@@ -47,7 +47,6 @@ public class MessageActivity extends AppCompatActivity {
     ArrayList<String> messages;
     DataBase db;
     RSACipher rsaCipher;
-    PostMessage poster;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +58,6 @@ public class MessageActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.sendButton);
         encodeButton = findViewById(R.id.encodeButton);
         loadingProgressBar = findViewById(R.id.loadingProgressBar);
-
-        poster = new PostMessage();
 
         // Get list of all profiles from database
         db = new DataBase(getApplicationContext());
@@ -119,23 +116,9 @@ public class MessageActivity extends AppCompatActivity {
                     pressedEncode = false;
                     loadingProgressBar.setVisibility(View.VISIBLE);
 
-                    // decode, add to db message, clear EditText, move to the end
-                    // of recyclerView
-                    //String data = "{\"author\":\"" + name + "\", \"message\":\"" + encodedMessage + "\"}";
-//                    new PostMessage().execute(
-//                            NetworkUtils.SERVER_HOST +
-//                                    NetworkUtils.API_POST_MESSAGE +
-//                                    roomNumber,
-//                            data);
-
-                    poster.sendPost(name, encodedMessage, roomNumber);
-//                    String decodedMessage = rsaCipher.decode(encodedMessage);
-//                    db.addMessage(roomNumber, name, decodedMessage, "0");
-//                    messages.add(name + "я" + decodedMessage + "я" + "0");
+                    new PostMessages().execute(name, encodedMessage, roomNumber);
 
                     messageEditText.setText("");
-//                    mainRecyclerViewer.getAdapter().notifyDataSetChanged();
-//                    mainRecyclerViewer.smoothScrollToPosition(messages.size()-1);
                     loadingProgressBar.setVisibility(View.INVISIBLE);
                 }
             }
@@ -230,30 +213,36 @@ public class MessageActivity extends AppCompatActivity {
     public class PostMessages extends AsyncTask<String, String, Void> {
         @Override
         protected Void doInBackground(String... params) {
-            String urlString = params[0]; // URL to call
-            String data = params[1]; //data to post
+            String author = params[0]; // author
+            String message = params[1]; //message
+            String roomNumber = params[2];
             OutputStream out = null;
 
             try {
-                URL url = new URL(urlString);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setRequestProperty("Content-Type", "application/json");
-                urlConnection.setRequestProperty("Accept","application/json");
-                urlConnection.setDoOutput(true);
-                urlConnection.setDoInput(true);
-                urlConnection.connect();
+                URL url = new URL("http://yexp.pythonanywhere.com/api/v1/post_rooms/" + roomNumber);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                conn.setRequestProperty("Accept","application/json");
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
 
-                DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
-                os.writeBytes(URLEncoder.encode(data, "UTF-8"));
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("author", author);
+                jsonParam.put("message", message);
+
+                Log.i("JSON", jsonParam.toString());
+                DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                os.writeBytes(jsonParam.toString());
 
                 os.flush();
                 os.close();
 
-                Log.i("STATUS", String.valueOf(urlConnection.getResponseCode()));
-                Log.i("MSG" , urlConnection.getResponseMessage());
+                Log.i("STATUS", String.valueOf(conn.getResponseCode()));
+                Log.i("MSG" , conn.getResponseMessage());
 
-                urlConnection.disconnect();
+                conn.disconnect();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
