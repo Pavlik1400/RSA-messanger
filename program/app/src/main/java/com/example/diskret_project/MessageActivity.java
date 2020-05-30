@@ -19,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -65,7 +66,7 @@ public class MessageActivity extends AppCompatActivity {
         messages = db.getMessages(roomName);
 
         // get parameters from db and assign rSACipher var
-        Long[] parameters = db.getEncodingParameters();
+        BigInteger[] parameters = db.getEncodingParameters();
         rsaCipher = new RSACipher(parameters[0], parameters[1], parameters[2]);
 
         // linear manager for recyclerView
@@ -210,7 +211,15 @@ public class MessageActivity extends AppCompatActivity {
                         // decode, add message to db, move to the end of recyclerView
                         String decodedMessage = rsaCipher.decode(encodedMessage);
                         String decodedAuthor = rsaCipher.decode(encodedAuthor);
-                        db.addMessage(roomName, encodedAuthor, decodedMessage, time);
+
+                        if (decodedMessage.equals("Wrong encoded message") ||
+                                decodedAuthor.equals("Wrong encoded message")){
+                            Toast.makeText(getApplicationContext(),
+                                    "Some of the messages are corrupted",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        db.addMessage(roomName, decodedAuthor, decodedMessage, time);
                         messages.add(decodedAuthor + "я" + decodedMessage + "я" + time);
 
                         mainRecyclerViewer.getAdapter().notifyDataSetChanged();

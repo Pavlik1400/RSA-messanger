@@ -11,6 +11,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -85,13 +86,13 @@ public class DataBase extends SQLiteOpenHelper {
      * @param q - q number
      * @param e - e number
      */
-    void setEncodingParams(long p, long q, long e){
+    void setEncodingParams(BigInteger p, BigInteger q, BigInteger e){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
 
         // save value
         ContentValues settingsValue = new ContentValues();
-        settingsValue.put(DataBase.COLUMN_ENCODING_PARAMETERS, p + "," + q + "," + e);
+        settingsValue.put(DataBase.COLUMN_ENCODING_PARAMETERS, p.toString() + "," + q.toString() + "," + e.toString());
         Cursor settingsCursor = null;
 
         try {
@@ -157,11 +158,11 @@ public class DataBase extends SQLiteOpenHelper {
      * returns parameters for encoding
      * @return Array of three long parameters
      */
-    Long[] getEncodingParameters(){
+    BigInteger[] getEncodingParameters(){
         // access db
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Long[] result = {(long) 0, (long) 0, (long) 0};
+        BigInteger[] result = {BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO};
         Cursor settingsCursor = null;
 
         try {
@@ -170,7 +171,7 @@ public class DataBase extends SQLiteOpenHelper {
             String params = settingsCursor.getString(settingsCursor.getColumnIndex(DataBase.COLUMN_ENCODING_PARAMETERS));
             String[] str_result = params.split(",");
             for (int index = 0; index < 3; ++index) {
-                result[index] = Long.parseLong(str_result[index]);
+                result[index] = new BigInteger(str_result[index]);
             }
             return result;
         } finally{

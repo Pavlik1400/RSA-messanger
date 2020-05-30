@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.math.BigInteger;
+
 public class SettingsActivity extends AppCompatActivity {
 
     // init all vars
@@ -42,7 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                long p, q, e;
+                BigInteger p, q, e;
 
                 // get info from all EditTexts
                 String p_number = pEditText.getText().toString();
@@ -79,11 +81,12 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 }
                 else{
-                    p = Long.parseLong(p_number);
-                    q = Long.parseLong(q_number);
-                    e = Long.parseLong(e_number);
+                    p = new BigInteger(p_number);
+                    q = new BigInteger(q_number);
+                    e = new BigInteger(e_number);
 
-                    if (p < 0 || q < 0 || e < 0){
+                    if (p.compareTo(BigInteger.ZERO) < 0 ||
+                            q.compareTo(BigInteger.ZERO) < 0 || e.compareTo(BigInteger.ZERO) < 0){
                         Toast.makeText(getApplicationContext(), "p, q, e should be positive",
                                 Toast.LENGTH_SHORT).show();
                     }
