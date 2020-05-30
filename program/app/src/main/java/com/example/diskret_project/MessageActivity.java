@@ -67,7 +67,14 @@ public class MessageActivity extends AppCompatActivity {
 
         // get parameters from db and assign rSACipher var
         BigInteger[] parameters = db.getEncodingParameters();
-        rsaCipher = new RSACipher(parameters[0], parameters[1], parameters[2]);
+        try {
+            rsaCipher = new RSACipher(parameters[0], parameters[1], parameters[2]);
+        } catch (ArithmeticException e){
+            Toast.makeText(getApplicationContext(),
+                    "not invertable number!\nChange constants in settings!",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
         // linear manager for recyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -215,8 +222,9 @@ public class MessageActivity extends AppCompatActivity {
                         if (decodedMessage.equals("Wrong encoded message") ||
                                 decodedAuthor.equals("Wrong encoded message")){
                             Toast.makeText(getApplicationContext(),
-                                    "Some of the messages are corrupted",
+                                    "Some of the messages are corrupted\nProbably used another numbers for encoding",
                                     Toast.LENGTH_SHORT).show();
+                            return;
                         }
 
                         db.addMessage(roomName, decodedAuthor, decodedMessage, time);

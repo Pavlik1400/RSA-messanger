@@ -12,9 +12,8 @@ public class RSACipher {
     public RSACipher(BigInteger P, BigInteger Q, BigInteger E){
         // Save encoding parameters (n, e, d)
         e = E;
-        this.n = P.multiply(Q);
-        this.d = E.modInverse(P.subtract(BigInteger.ONE).multiply(Q.subtract(BigInteger.ONE)));
-        System.out.println(e.toString() + ", " + n.toString() + ", " + d.toString());
+        n = P.multiply(Q);
+        d = E.modInverse(P.subtract(BigInteger.ONE).multiply(Q.subtract(BigInteger.ONE)));
     }
 
     /**
@@ -79,18 +78,21 @@ public class RSACipher {
     public String decode(String encodedMessage){
         String decoded;
         BigInteger long_encoded;
+        char first_char;
+        char second_char;
         StringBuilder result = new StringBuilder();
         String[] encoded_array = encodedMessage.split(",");
         for (String encoded : encoded_array) {
             try {
                 long_encoded = new BigInteger(encoded);
                 decoded = modExp(long_encoded, this.d, this.n).toString();
+                first_char = (char) Integer.parseInt(decoded.substring(0, decoded.length() - 3));
+                second_char = (char) Integer.parseInt(decoded.substring(decoded.length() - 3));
             } catch (NumberFormatException e){
                 return "Wrong encoded message";
             }
 
-            char first_char = (char) Integer.parseInt(decoded.substring(0, decoded.length() - 3));
-            char second_char = (char) Integer.parseInt(decoded.substring(decoded.length() - 3));
+
             result.append(first_char);
             result.append(second_char);
         }
